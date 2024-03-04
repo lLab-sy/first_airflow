@@ -8,11 +8,17 @@ default_args = {
     'retry_delay': timedelta(minutes=2)
 }
 
-def greet(times: int):
-    print("Hello Airflow!\n"*times)
+def greet(mName, ti):
+    name = ti.xcom_pull(task_ids='get_name')
+    pokemon2 = ti.xcom_pull(task_ids='get_name', key='pokemon2')
+    print(f'Hello {name} and {pokemon2}~! My name is {mName}!!')
+
+def getName(ti):
+    ti.xcom_push(key='pokemon2', value='Lizadon')
+    return 'Pikachu'
 
 with DAG(
-    dag_id='dag_with_python_operator_v1',
+    dag_id='dag_with_python_operator_v3',
     default_args=default_args,
     description='this is my first time write dag on airflow with python operator',
     start_date=datetime(2024, 3, 1),
@@ -21,6 +27,12 @@ with DAG(
     task1 = PythonOperator(
         task_id = "greet",
         python_callable=greet,
-        op_kwargs={'times': 3}
+        op_kwargs={'mName': "Satoshi"}
     )
-    task1
+
+    task2 = PythonOperator(
+        task_id = "get_name",
+        python_callable=getName
+    )
+
+    task2 >> task1
