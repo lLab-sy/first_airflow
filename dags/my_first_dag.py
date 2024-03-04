@@ -1,5 +1,5 @@
-import pytz
 from datetime import datetime, timedelta
+import pytz
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 
