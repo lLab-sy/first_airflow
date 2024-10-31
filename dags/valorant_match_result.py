@@ -80,13 +80,38 @@ def extract_web_data(web_data: str) -> Optional[str] :
     try:
         web_content = BeautifulSoup(web_data, 'html.parser')
         # print(web_content.text)
-        pillar_body = web_content.find('div', attrs={'id': 'wrapper'})
-        print(pillar_body.text)
-        # ranking_top3 = pillar_body.find(class_='ranking-top3')
-        # print(ranking_top3)
-        # other_rank = pillar_body.find_all('div', attrs={'class': 'container'})
-        # for novel in top_novel:
-        #     print(novel.text())
+        wrapper_body = web_content.find('div', attrs={'id': 'wrapper'})
+        col_container = wrapper_body.find(class_='col-container')
+        col_mod_1 = col_container.find(class_='col mod-1')
+        # content area
+        date = None
+        
+        for row in col_mod_1.find_all('div'):
+            if row is not None and row.has_attr('class'):
+                # print(row['class'])
+                if 'wf-label' in row['class']:
+                    print("At => " + row.text.strip())
+                    date = row.text.strip()
+                elif 'wf-card' in row['class'] and date is not None:
+                    print("found match!")
+                    matches = row.find_all('a')
+                    for match in matches:
+                        time_match = match.find('div', class_='match-item-time').text.strip()
+                        teams = match.find_all('div', class_='match-item-vs-team')
+
+                        team_name_class = 'match-item-vs-team-name'
+                        team_score_class = 'match-item-vs-team-score'
+                        t1_name = teams[0].find('div', class_=team_name_class).text.strip()
+                        t1_score = teams[0].find('div', class_=team_score_class).text.strip()
+                        t2_name = teams[1].find('div', class_=team_name_class).text.strip()
+                        t2_score = teams[1].find('div', class_=team_score_class).text.strip()
+                        event_name = match.find('div', class_='match-item-event').text.strip()
+                        print(f"Time: {time_match}")
+                        print(f"Team 1: {t1_name} - Score: {t1_score}")
+                        print(f"Team 2: {t2_name} - Score: {t2_score}")
+                        print(f"Event: {event_name.strip()}")
+                        print("-" * 40)
+                        date = None
     except:
         logger_err("someting went wrong")
         raise
